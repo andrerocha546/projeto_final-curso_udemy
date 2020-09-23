@@ -88,5 +88,25 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    return { save, remove, get, getById }
+    // vai montar a aestrutura de arvore de forma recursiva
+    const toTree = (categories, tree) => {
+        // na primeira chamada, pega todas as categorias que nao têm parentId
+        // categorias mais externas
+        if(!tree) tree = categories.filter(category => !category.parentId)
+        // pra cada categoria, vai chamar de novo a função, mas passando apenas filhos diretos
+        tree = tree.map(parentNode => {
+            const isChild = node => node.parentId == parentNode.id
+            parentNode.children = toTree(categories, categories.filter(isChild))
+            return parentNode
+        })
+        return tree 
+    }
+
+    const getTree = (req, res) => {
+        app.db('categories')
+            .then(categories => res.json(toTree(withPath(categories))))
+            .catch(err => res.status(500).send(err))
+    }
+
+    return { save, remove, get, getById, getTree }
 }
