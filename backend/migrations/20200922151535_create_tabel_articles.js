@@ -1,5 +1,3 @@
-const { table } = require("../config/db");
-
 exports.up = function(knex) {
     return knex.schema.createTable('article', table => {
         table.increments('id').primary()
