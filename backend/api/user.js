@@ -13,7 +13,7 @@ module.exports = app => {
         if(req.params.id) user.id = req.params.id
 
         // garantir que usuario não sera cadastrado admin a partir do signup
-        if(!req.originUrl.statsWith('/users')) user.admin = false
+        if(!req.originalUrl.startsWith('/users')) user.admin = false
         if(!req.user || !req.user.admin) user.admin = false
 
         try {
