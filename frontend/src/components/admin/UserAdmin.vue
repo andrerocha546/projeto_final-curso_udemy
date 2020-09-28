@@ -6,6 +6,7 @@
                 <b-col md="6" sm="12">
                     <b-form-group label="Nome:" label-for="user-name">
                         <b-form-input id="user-name" type="text" 
+                            :readonly="mode === 'remove'"
                             v-model="user.name" required
                             placeholder="Informe o nome do Usuário" />
                     </b-form-group>
@@ -13,15 +14,17 @@
                 <b-col md="6" sm="12">
                     <b-form-group label="E-mail:" label-for="user-email">
                         <b-form-input id="user-email" type="text" 
+                            :readonly="mode === 'remove'"
                             v-model="user.email" required
                             placeholder="Informe o E-mail do Usuário" />
                     </b-form-group>
                 </b-col>
             </b-row>
-            <b-form-checkbox id="user-admin" v-model="user.admin" class="mt-3 mb-3">
+            <b-form-checkbox id="user-admin" v-model="user.admin" class="mt-3 mb-3"
+                v-show="mode === 'save'">
                 Administrador?
             </b-form-checkbox>
-            <b-row>
+            <b-row v-show="mode === 'save'">
                 <b-col md="6" sm="12">
                     <b-form-group label="Nome:" label-for="user-password">
                         <b-form-input id="user-password" type="password" 
@@ -38,77 +41,95 @@
                     </b-form-group>
                 </b-col>
             </b-row>
-            <b-button variant="primary" v-if="mode === 'save'" 
-                @click="save">Salvar</b-button>
-            <b-button variant="danger" v-if="mode === 'remove'"
-                @click="remove">Excluir</b-button>
-            <b-button class="ml-2" 
-                @click="reset">Cancelar  </b-button>
+            <b-row>
+                <b-col vs="12">
+                    <b-button variant="primary" v-if="mode === 'save'" 
+                        @click="save">Salvar</b-button>
+                    <b-button variant="danger" v-if="mode === 'remove'"
+                        @click="remove">Excluir</b-button>
+                    <b-button class="ml-2" 
+                        @click="reset">Cancelar</b-button>
+                </b-col>
+            </b-row>
         </b-form>
         <hr>
-        <b-table hover striped :items="users" :fields="fields"></b-table>
+        <b-table hover striped :items="users" :fields="fields">
+            <template slot="actions" scope="data">
+                <b-button variant="warning" @click="loadUser(data.item)" class="mr-2">
+                    <i class="fa fa-pencil"></i>
+                </b-button>
+                <b-button variant="danger" @click="loadUser(data.item, 'remove')">
+                    <i class="fa fa-trash"></i>
+                </b-button>
+            </template>
+        </b-table>
     </div>
 </template>
 
 <script>
-import axios from 'axios'
-import { baseApiUrl, showError } from '@/global'
+import axios from "axios";
+import { baseApiUrl, showError } from "@/global";
 
 export default {
-    name: 'UserAdmin',
-    data: function() {
-        return {
-            mode: 'save',
-            user: {},
-            users: [],
-            fields: [
-                { key: 'id', label: 'Código', sortable: true },
-                { key: 'name', label: 'Nome', sortable: true },
-                { key: 'email', label: 'E-mail', sortable: true },
-                { key: 'admin', label: 'Administrador', sortable: true,
-                    formatter: value => value ? 'Sim' : 'Não' },
-                { key: 'actions', label: 'Ações' }
-            ]
-        }
-    },
-    methods: {
-        loadUsers() {
-            const url = `${baseApiUrl}/users`
-            axios.get(url).then(res => {
-                this.users = res.data
-            })
+  name: "UserAdmin",
+  data: function() {
+    return {
+      mode: "save",
+      user: {},
+      users: [],
+      fields: [
+        { key: "id", label: "Código", sortable: true },
+        { key: "name", label: "Nome", sortable: true },
+        { key: "email", label: "E-mail", sortable: true },
+        { key: "admin", label: "Administrador", sortable: true,
+            formatter: value => (value ? "Sim" : "Não")
         },
-        reset() {
-            this.mode = 'save'
-            this.user = {}
-            this.loadUsers()
-        }, 
-        save() {
-            const method = this.user.id ? 'put' : 'post'
-            const id = this.user.id ? `/${this.user.id}` : ''
-            axios[method](`${baseApiUrl}/users${id}`, this.user)
-                .then(() => {
-                    this.$toasted.global.defaultSuccess()
-                    this.reset()
-                })
-                .catch(showError)
-        },
-        remove() {
-            const id = this.user.id
-            axios.delete(`${baseApiUrl}/users/${id}`)
-                .then(() => {
-                    this.$toasted.global.defaultSuccess()
-                    this.reset()
-                })
-                .catch(showError)
-        }
+        { key: "actions", label: "Ações" }
+      ]
+    };
+  },
+  methods: {
+    loadUsers() {
+      const url = `${baseApiUrl}/users`;
+      axios.get(url).then(res => {
+        this.users = res.data;
+      });
     },
-    mounted() {
-        this.loadUsers()
+    reset() {
+      this.mode = "save";
+      this.user = {};
+      this.loadUsers();
+    },
+    save() {
+      const method = this.user.id ? "put" : "post";
+      const id = this.user.id ? `/${this.user.id}` : "";
+      axios[method](`${baseApiUrl}/users${id}`, this.user)
+        .then(() => {
+          this.$toasted.global.defaultSuccess();
+          this.reset();
+        })
+        .catch(showError);
+    },
+    remove() {
+      const id = this.user.id;
+      axios
+        .delete(`${baseApiUrl}/users/${id}`)
+        .then(() => {
+          this.$toasted.global.defaultSuccess();
+          this.reset();
+        })
+        .catch(showError);
+    },
+    loadUser(user, mode = "save") {
+      this.mode = mode;
+      this.user = { ...user };
     }
-}
+  },
+  mounted() {
+    this.loadUsers();
+  }
+};
 </script>
 
 <style>
-
 </style>
