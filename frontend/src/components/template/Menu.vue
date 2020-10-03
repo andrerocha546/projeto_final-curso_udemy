@@ -34,7 +34,17 @@ export default {
         getTreeData() {
             const url = `${baseApiUrl}/categories/tree`
             return axios.get(url).then(res => res.data)
+        },
+        onNodeSelect(node) {
+            this.$router.push({
+                name: 'articleByCategory',
+                params: { id: node.id }
+            })
         }
+    },
+    mounted() {
+        //forma de acessar algum elemento que esta no template por seu ref
+        this.$refs.tree.$on('node:selected', this.onNodeSelect)
     }
 }
 </script>

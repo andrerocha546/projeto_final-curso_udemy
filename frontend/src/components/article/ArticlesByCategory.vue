@@ -47,6 +47,18 @@ export default {
             })
         }
     },
+    watch: {
+        //sempre que a rota mudar, vai chamar esse metodo e a navegação pelo menu ira funcinar normal
+        $route(to) {
+            this.category.id = to.params.id
+            this.articles = []
+            this.page = 1
+            this.loadMore= true
+
+            this.getCategory()
+            this.getArticles()
+        }
+    },
     mounted() {
         this.category.id = this.$route.params.id
         this.getCategory()
